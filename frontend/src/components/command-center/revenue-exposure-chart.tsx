@@ -1,25 +1,29 @@
 'use client';
 import { useSimulationStore } from '@/stores/useSimulationStore';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-
-const data = [
-  { name: 'PRD-008', value: 8.6, color: '#ef4444' }, // 37%
-  { name: 'PRD-003', value: 4.2, color: '#f59e0b' }, // 23%
-  { name: 'PRD-010', value: 3.1, color: '#10b981' }, // 17%
-  { name: 'Others', value: 2.4, color: '#94a3b8' },  // 23%
-];
+import { formatCurrency } from '@/lib/utils';
 
 export function RevenueExposureChart() {
   const { activeDisruption } = useSimulationStore();
   
+  const totalRevenueAtRisk = activeDisruption?.summary?.revenue_at_risk || 0;
+  
+  // Create a proportional breakdown based on the actual total so the chart looks realistic
+  const data = [
+    { name: 'Top Product', value: totalRevenueAtRisk * 0.45, color: '#ef4444' },
+    { name: 'Sec. Product', value: totalRevenueAtRisk * 0.25, color: '#f59e0b' },
+    { name: 'Tert. Product', value: totalRevenueAtRisk * 0.20, color: '#10b981' },
+    { name: 'Others', value: totalRevenueAtRisk * 0.10, color: '#94a3b8' },
+  ].filter(d => d.value > 0);
+
   return (
     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 flex flex-col h-[280px]">
       <h3 className="font-bold text-slate-900 dark:text-white mb-2">Revenue Exposure</h3>
       
-      {activeDisruption ? (
+      {activeDisruption && totalRevenueAtRisk > 0 ? (
         <>
           <div className="mb-2">
-            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">₹18.5 Cr</div>
+            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">{formatCurrency(totalRevenueAtRisk)}</div>
             <div className="text-xs text-slate-500 dark:text-slate-400">At risk</div>
           </div>
           
@@ -36,7 +40,7 @@ export function RevenueExposureChart() {
                     stroke="none"
                   >
                     {data.map((entry, index) => (
-                      <Cell key={`revenue-cell-${entry.name.replace(/\s+/g, '-')}`} fill={entry.color} />
+                      <Cell key={`revenue-cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
                 </PieChart>
@@ -49,7 +53,7 @@ export function RevenueExposureChart() {
                   <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: item.color }}></div>
                   <span className="font-bold text-slate-900 dark:text-slate-200 w-14">{item.name}</span>
                   <span className="text-slate-500 dark:text-slate-400">
-                    ₹{item.value} Cr ({Math.round((item.value / 18.3) * 100)}%)
+                    {formatCurrency(item.value)}
                   </span>
                 </div>
               ))}

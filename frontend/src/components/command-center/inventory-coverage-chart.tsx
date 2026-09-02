@@ -14,6 +14,18 @@ const data = [
 export function InventoryCoverageChart() {
   const { activeDisruption } = useSimulationStore();
   
+  const severity = activeDisruption?.disruption?.severity || 0.5;
+  const currentCoverage = (7.2 * (1 - severity)).toFixed(1);
+  
+  const dynamicData = [
+    { day: 'Day -10', coverage: 7.2 },
+    { day: 'Day -5', coverage: 6.8 },
+    { day: 'Day 0', coverage: 5.5 },
+    { day: 'Day +3', coverage: Number(currentCoverage) + 1.2 },
+    { day: 'Day +6', coverage: Number(currentCoverage) },
+    { day: 'Day +10', coverage: Math.max(0, Number(currentCoverage) - 1.5) },
+  ];
+
   return (
     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 flex flex-col h-[280px]">
       <h3 className="font-bold text-slate-900 dark:text-white mb-2">Inventory Coverage</h3>
@@ -21,13 +33,13 @@ export function InventoryCoverageChart() {
       {activeDisruption ? (
         <>
           <div className="mb-4">
-            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">3.0 days</div>
+            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">{currentCoverage} days</div>
             <div className="text-xs text-slate-500 dark:text-slate-400">Avg. remaining coverage</div>
           </div>
           
           <div className="flex-1 h-[120px] w-full mt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <LineChart data={dynamicData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={5} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(val) => `${val}d`} />

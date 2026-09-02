@@ -27,19 +27,15 @@ export default function ImpactAnalysisPage() {
   const [activeTab, setActiveTab] = useState('Impact Overview');
 
   useEffect(() => {
-    // We disable this redirect for the sake of UI development 
-    // so we can see the layout even if store is cleared on reload
-    // if (!activeDisruption) {
-    //   router.push('/command-center');
-    // }
+    // Redirect back if simulation is lost (e.g. page reload)
+    if (!activeDisruption) {
+      router.push('/disruptions');
+    }
   }, [activeDisruption, router]);
 
-  // Use a fallback object if no activeDisruption so UI doesn't break during dev
-  const data = activeDisruption || {
-    simulation_id: 'SIM-2025-05-17-001',
-    disruption: { disruption_type: 'Supplier Capacity Disruption', affected_entity_id: 'SUP-007', severity: 1.0, duration_days: 10 },
-    summary: { affected_suppliers: 7, affected_materials: 3, affected_plants: 4, affected_products: 8, affected_orders: 124, revenue_at_risk: 185000000 }
-  };
+  const data = activeDisruption;
+
+  if (!data) return null;
 
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0A0F1C] overflow-y-auto overflow-x-hidden custom-scrollbar">
@@ -49,9 +45,7 @@ export default function ImpactAnalysisPage() {
           <div className="mb-6 flex justify-between items-end">
             <div>
               <div className="flex items-center text-[12px] font-bold text-slate-500 dark:text-slate-400 mb-3 tracking-wide uppercase">
-                <span className="hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer transition-colors">Disruptions</span>
-                <ChevronRight className="w-3.5 h-3.5 mx-2 text-slate-400 dark:text-slate-600" />
-                <span className="hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer transition-colors">Analysis</span>
+                <Link href="/disruptions" className="hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer transition-colors">Disruptions</Link>
                 <ChevronRight className="w-3.5 h-3.5 mx-2 text-slate-400 dark:text-slate-600" />
                 <span className="text-slate-900 dark:text-white">{data.disruption.affected_entity_id}</span>
               </div>
