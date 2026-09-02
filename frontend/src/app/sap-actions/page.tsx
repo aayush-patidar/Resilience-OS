@@ -1,12 +1,19 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { CheckCircle2, Server, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useSimulationStore } from '@/stores/useSimulationStore';
 
 function PageContent() {
   const searchParams = useSearchParams();
   const sim = searchParams.get('sim');
+  const { clearDisruption } = useSimulationStore();
+
+  useEffect(() => {
+    // Automatically clear the active disruption since it has been resolved
+    clearDisruption();
+  }, [clearDisruption]);
 
   return (
     <div className="max-w-4xl mx-auto py-12">
