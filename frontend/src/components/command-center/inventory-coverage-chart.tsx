@@ -2,28 +2,20 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, ResponsiveContainer } from 'recharts';
 import { useSimulationStore } from '@/stores/useSimulationStore';
 
-const data = [
-  { day: 'May 5', coverage: 7.2 },
-  { day: 'May 8', coverage: 6.8 },
-  { day: 'May 11', coverage: 5.5 },
-  { day: 'May 14', coverage: 4.2 },
-  { day: 'May 17', coverage: 3.0 },
-  { day: 'May 20', coverage: 1.5 },
-];
-
 export function InventoryCoverageChart() {
   const { activeDisruption } = useSimulationStore();
+  const isRecovered = activeDisruption?.status === 'RECOVERED';
   
-  const severity = activeDisruption?.disruption?.severity || 0.5;
+  const severity = (!isRecovered && activeDisruption?.disruption?.severity) ? activeDisruption.disruption.severity : 0;
   const currentCoverage = (7.2 * (1 - severity)).toFixed(1);
   
   const dynamicData = [
     { day: 'Day -10', coverage: 7.2 },
     { day: 'Day -5', coverage: 6.8 },
     { day: 'Day 0', coverage: 5.5 },
-    { day: 'Day +3', coverage: Number(currentCoverage) + 1.2 },
-    { day: 'Day +6', coverage: Number(currentCoverage) },
-    { day: 'Day +10', coverage: Math.max(0, Number(currentCoverage) - 1.5) },
+    { day: 'Day +3', coverage: isRecovered ? 5.5 : Number(currentCoverage) + 1.2 },
+    { day: 'Day +6', coverage: isRecovered ? 5.8 : Number(currentCoverage) },
+    { day: 'Day +10', coverage: isRecovered ? 6.5 : Math.max(0, Number(currentCoverage) - 1.5) },
   ];
 
   return (
@@ -33,7 +25,7 @@ export function InventoryCoverageChart() {
       {activeDisruption ? (
         <>
           <div className="mb-4">
-            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">{currentCoverage} days</div>
+            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">{isRecovered ? '6.5' : currentCoverage} days</div>
             <div className="text-xs text-slate-500 dark:text-slate-400">Avg. remaining coverage</div>
           </div>
           
@@ -44,7 +36,7 @@ export function InventoryCoverageChart() {
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={5} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(val) => `${val}d`} />
                 <ReferenceLine y={2} stroke="#ef4444" strokeDasharray="3 3" label={{ position: 'insideTopRight', value: 'Shortage Threshold', fill: '#ef4444', fontSize: 10 }} />
-                <Line type="monotone" dataKey="coverage" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3, fill: '#3b82f6' }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="coverage" stroke={isRecovered ? "#10b981" : "#3b82f6"} strokeWidth={2} dot={{ r: 3, fill: isRecovered ? "#10b981" : "#3b82f6" }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

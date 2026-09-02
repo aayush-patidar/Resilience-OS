@@ -3,10 +3,12 @@ import { useSimulationStore } from '@/stores/useSimulationStore';
 
 export function ProductionImpactChart() {
   const { activeDisruption } = useSimulationStore();
+  const isRecovered = activeDisruption?.status === 'RECOVERED';
   const affectedPlants = activeDisruption?.summary?.affected_plants || 0;
   
   // Calculate a proportional impact metric based on the live simulation data
-  const productionImpactPercent = affectedPlants > 0 ? Math.min(100, affectedPlants * 15) : 0;
+  // If we have recovered, the impact is neutralized
+  const productionImpactPercent = (!isRecovered && affectedPlants > 0) ? Math.min(100, affectedPlants * 15) : 0;
   const normalUnits = 2000;
   const impactedUnits = Math.round(normalUnits * (1 - (productionImpactPercent / 100)));
   
@@ -14,7 +16,7 @@ export function ProductionImpactChart() {
     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-4 flex flex-col h-[280px]">
       <h3 className="font-bold text-slate-900 dark:text-white mb-2">Production Impact</h3>
       
-      {activeDisruption && productionImpactPercent > 0 ? (
+      {activeDisruption && !isRecovered ? (
         <>
           <div className="mb-4">
             <div className="text-3xl font-extrabold text-slate-900 dark:text-white">{productionImpactPercent.toFixed(1)}%</div>
@@ -46,7 +48,7 @@ export function ProductionImpactChart() {
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-center opacity-60">
            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 mb-2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-           <p className="text-[13px] text-slate-500 font-medium">Awaiting simulation data</p>
+           <p className="text-[13px] text-slate-500 font-medium">{isRecovered ? 'Capacity fully restored' : 'Awaiting simulation data'}</p>
         </div>
       )}
     </div>

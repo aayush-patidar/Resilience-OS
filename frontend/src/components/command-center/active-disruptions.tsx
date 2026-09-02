@@ -1,11 +1,13 @@
 'use client';
 import { useSimulationStore } from '@/stores/useSimulationStore';
 import Link from 'next/link';
-import { AlertTriangle, AlertCircle } from 'lucide-react';
+import { AlertTriangle, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function ActiveDisruptions() {
   const { activeDisruption } = useSimulationStore();
+  const isRecovered = activeDisruption?.status === 'RECOVERED';
+  const isDisrupted = !!activeDisruption && !isRecovered;
 
   return (
     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
@@ -15,7 +17,7 @@ export function ActiveDisruptions() {
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50 dark:bg-transparent custom-scrollbar">
-        {activeDisruption && (
+        {isDisrupted && (
           <Link 
             href={`/disruptions/${activeDisruption.simulation_id}`}
             className="block bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-lg p-3 hover:shadow-md transition-shadow relative overflow-hidden"
@@ -42,10 +44,19 @@ export function ActiveDisruptions() {
             </div>
           </Link>
         )}
-        {!activeDisruption && (
+        {!isDisrupted && (
            <div className="text-center py-6">
-             <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-             <p className="text-sm text-slate-500 font-medium">Run a simulation to see active critical disruptions.</p>
+             {isRecovered ? (
+               <>
+                 <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                 <p className="text-sm text-slate-500 font-medium">All active disruptions have been resolved.</p>
+               </>
+             ) : (
+               <>
+                 <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                 <p className="text-sm text-slate-500 font-medium">Run a simulation to see active critical disruptions.</p>
+               </>
+             )}
            </div>
         )}
       </div>

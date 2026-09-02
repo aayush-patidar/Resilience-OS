@@ -8,12 +8,12 @@ import { useSimulationStore } from '@/stores/useSimulationStore';
 function PageContent() {
   const searchParams = useSearchParams();
   const sim = searchParams.get('sim');
-  const { clearDisruption } = useSimulationStore();
+  const { recoverDisruption } = useSimulationStore();
 
   useEffect(() => {
-    // Automatically clear the active disruption since it has been resolved
-    clearDisruption();
-  }, [clearDisruption]);
+    // Mark the disruption as recovered so the risk is neutralized but the supplier status is preserved
+    recoverDisruption();
+  }, [recoverDisruption]);
 
   return (
     <div className="max-w-4xl mx-auto py-12">

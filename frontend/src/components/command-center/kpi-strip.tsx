@@ -7,49 +7,52 @@ export function KPIStrip() {
   const { activeDisruption } = useSimulationStore();
   const summary = activeDisruption?.summary;
 
-  // Fallbacks based on activeDisruption state, avoiding hardcoded mocks when no data exists
-  const isDisrupted = !!activeDisruption;
+  const isRecovered = activeDisruption?.status === 'RECOVERED';
+  const isDisrupted = !!activeDisruption && !isRecovered;
+  
+  // If we have an active disruption OR we recovered from it, we know a supplier was originally affected
+  const hasSupplierData = !!activeDisruption;
 
   const kpis = [
     { 
       label: 'Active Disruptions', 
       value: isDisrupted ? '1' : '0',
-      subtext: isDisrupted ? '1 critical alert' : 'All clear', 
-      icon: AlertTriangle, iconColor: 'text-red-500', iconBg: 'bg-red-50 dark:bg-red-950/50',
-      badge: isDisrupted ? 'Critical' : null, badgeColor: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400'
+      subtext: isDisrupted ? '1 critical alert' : (isRecovered ? 'All risks mitigated' : 'All clear'), 
+      icon: AlertTriangle, iconColor: isDisrupted ? 'text-red-500' : 'text-emerald-500', iconBg: isDisrupted ? 'bg-red-50 dark:bg-red-950/50' : 'bg-emerald-50 dark:bg-emerald-950/50',
+      badge: isDisrupted ? 'Critical' : (isRecovered ? 'Recovered' : null), badgeColor: isDisrupted ? 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400'
     },
     { 
       label: 'Affected Suppliers', 
-      value: isDisrupted ? summary?.affected_suppliers?.toString() || '0' : '0', 
-      subtext: isDisrupted ? `From ${activeDisruption?.disruption?.affected_entity_id || 'network'}` : '-', 
+      value: hasSupplierData ? summary?.affected_suppliers?.toString() || '0' : '0', 
+      subtext: hasSupplierData ? `From ${activeDisruption?.disruption?.affected_entity_id || 'network'}` : '-', 
       icon: Users, iconColor: 'text-purple-600 dark:text-purple-400', iconBg: 'bg-purple-50 dark:bg-purple-900/30',
-      badge: isDisrupted && (summary?.affected_suppliers || 0) > 0 ? 'High' : null, badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400'
+      badge: hasSupplierData && (summary?.affected_suppliers || 0) > 0 ? (isRecovered ? 'Offline' : 'High') : null, badgeColor: isRecovered ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400'
     },
     { 
       label: 'Affected Plants', 
       value: isDisrupted ? summary?.affected_plants?.toString() || '0' : '0', 
-      subtext: isDisrupted ? 'Production blocked' : '-', 
+      subtext: isDisrupted ? 'Production blocked' : (isRecovered ? 'Sourcing alternated' : '-'), 
       icon: Factory, iconColor: 'text-blue-600 dark:text-blue-400', iconBg: 'bg-blue-50 dark:bg-blue-900/30',
       badge: isDisrupted && (summary?.affected_plants || 0) > 0 ? 'High' : null, badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400'
     },
     { 
       label: 'Orders at Risk', 
       value: isDisrupted ? summary?.affected_orders?.toString() || '0' : '0', 
-      subtext: isDisrupted && summary?.revenue_at_risk ? `${formatCurrency(summary.revenue_at_risk)} exposure` : '-', 
+      subtext: isDisrupted && summary?.revenue_at_risk ? `${formatCurrency(summary.revenue_at_risk)} exposure` : (isRecovered ? 'Orders secured' : '-'), 
       icon: ClipboardList, iconColor: 'text-emerald-600 dark:text-emerald-400', iconBg: 'bg-emerald-50 dark:bg-emerald-900/30',
       badge: isDisrupted && (summary?.affected_orders || 0) > 0 ? 'Critical' : null, badgeColor: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400'
     },
     { 
       label: 'Revenue at Risk', 
       value: isDisrupted && summary?.revenue_at_risk ? formatCurrency(summary.revenue_at_risk) : '₹0', 
-      subtext: isDisrupted ? 'Projected loss' : '-', 
+      subtext: isDisrupted ? 'Projected loss' : (isRecovered ? 'Revenue protected' : '-'), 
       icon: IndianRupee, iconColor: 'text-amber-500 dark:text-amber-400', iconBg: 'bg-amber-50 dark:bg-amber-900/30',
       badge: isDisrupted && (summary?.revenue_at_risk || 0) > 0 ? 'Critical' : null, badgeColor: 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400'
     },
     { 
       label: 'Production Impact', 
       value: isDisrupted && summary?.affected_plants ? `${Math.min(100, summary.affected_plants * 15)}%` : '0%', 
-      subtext: isDisrupted && summary?.affected_plants ? 'Capacity reduced' : '-', 
+      subtext: isDisrupted && summary?.affected_plants ? 'Capacity reduced' : (isRecovered ? 'Capacity restored' : '-'), 
       icon: BarChart3, iconColor: 'text-blue-600 dark:text-blue-400', iconBg: 'bg-blue-50 dark:bg-blue-900/30',
       badge: isDisrupted && (summary?.affected_plants || 0) > 0 ? 'High' : null, badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400'
     },
